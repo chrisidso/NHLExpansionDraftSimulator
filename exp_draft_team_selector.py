@@ -5,12 +5,17 @@ import os
 import sys
 import math
 
-avg_PlusMinus_centers = 0.0
-avg_PlusMinus_defense = 0.0
-avg_PlusMinus_wings = 0.0
 Teams = []
+team_Plus_Minus = []
+team_PS = []
+team_Ztot = []
 team_Avg_PlusMinus = 0.0
 team_Std_PlusMinus = 0.0
+team_Avg_Ztot = 0.0
+team_Std_Ztot = 0.0
+team_Avg_PS = 0.0
+team_Std_PS = 0.0
+
 team_Strength = None
 
 def load_setup(year):
@@ -88,22 +93,17 @@ def reduce_vars(df):
     """ Reduces the var list in the data frame to only those needed."""
     return df.iloc[:,[1,2,3,4,5,9,11,28,29,30,32,33,34,35]]
 
-def calc_base_stats(df):
-    global avg_PlusMinus_centers 
-    global avg_PlusMinus_defense
-    global avg_PlusMinus_wings         
-
-    df_centers = df[df['Pos'] == 'C']
-    df_wings = df[(df['Pos'] == 'RW') | (df['Pos'] == 'LW')]
-    df_defense = df[df['Pos'] == 'D']
-    avg_PlusMinus_centers = df_centers['adj+/-'].mean()
-    avg_PlusMinus_defense = df_defense['adj+/-'].mean()
-    avg_PlusMinus_wings = df_wings['adj+/-'].mean()   
-    
-    team_Plus_Minus = []
+def calc_base_stats(df):    
+    """ Calculates team stats - for Plus_Minus, PS, and Ztot. Ztot is a stat
+    of my own creation."""
+    global team_Plus_Minus
+    global team_PS
+    global team_Ztot
     for team in Teams:
         df2_myteam = df[df['Tm'] == team]
         team_Plus_Minus.append(df2_myteam['+/-'].sum())
+        team_PS.append(df2_myteam['PS'].sum())
+        team_Ztot.append(df2_myteam['Ztot'].sum())
     
     tot = 0
     global team_Avg_PlusMinus
@@ -117,35 +117,58 @@ def calc_base_stats(df):
         tot += (i - team_Avg_PlusMinus)**2
     team_Std_PlusMinus = math.sqrt(tot/len(team_Plus_Minus)) 
 
+    tot = 0
+    global team_Avg_PS
+    for i in team_PS:
+        tot += i
+    team_Avg_PS = tot/len(team_PS)    
+    
+    tot = 0
+    global team_Std_PS
+    for i in team_PS:
+        tot += (i - team_Avg_PS)**2
+    team_Std_PS = math.sqrt(tot/len(team_PS)) 
+
+    tot = 0
+    global team_Avg_Ztot
+    for i in team_Ztot:
+        tot += i
+    team_Avg_Ztot = tot/len(team_Ztot)    
+    
+    tot = 0
+    global team_Std_Ztot
+    for i in team_Ztot:
+        tot += (i - team_Avg_Ztot)**2
+    team_Std_Ztot = math.sqrt(tot/len(team_Ztot))
+
 def calc_team_strength(df, year):
     # Calculate the strength of each team - and make a data frame with that information
-    # Fifrst check 
-    # first check if  Golden Knights are exempt
+    # Check if Golden Knights are exempt
     # The Vegas Golden Knights (VGK) were an expansion team in 2017, so they are immune
     # from expansion drafts from 2017 to 2019. They will be immune too when Seattle's
     # expansion draft happens in 2021. So from 2017 on need to remove their players.
+    
+    global Teams
+    d = {'Team'}
+    ts = pd.DataFrame(Teams, columns = d)    
+    ts['Strength'] = 0.0    
+    for i in range(len(ts)):
+        z_Plus_Minus = (team_Plus_Minus[i] - team_Avg_PlusMinus)/team_Std_PlusMinus
+        #z_PS = (team_PS[i] - team_Avg_PS)/team_Std_PS
+        #z_Ztot = (team_Ztot[i] - team_Avg_Ztot)/team_Std_Ztot        
+        ts.iat[i,1] = z_Plus_Minus
+    
+    # Need to remove Vegas Knights players if year is >= 2017    
     if year >= 2017:
         df1 = df[df['Tm'] != 'VEG']
+        Teams = df1['Tm'].unique()
+        ts1 = ts[ts['Team'] != 'VEG']
     else:
         df1 = df
-
-    global Teams
-    Teams = df1['Tm'].unique()
-     
-    team_plusminus = []
-    for team in Teams:
-        df2_myteam = df[df['Tm'] == team]
-        team_plusminus.append(df2_myteam['+/-'].sum())
-
-    d = {'Team'}
-    ts = pd.DataFrame(Teams, columns = d)
-    ts['Strength'] = 0.0
-    for i in range(len(ts)):
-        ts.iat[i,1] = (team_plusminus[i] - team_Avg_PlusMinus)/team_Std_PlusMinus
+        ts1 = ts   
 
     global team_Strength
-    team_Strength = ts.sort_values(by=['Strength'], ascending = False, axis=0) 
-
+    team_Strength = ts1.sort_values(by=['Strength'], ascending = False, axis=0)   
     return df1   
 
 def calc_player_value(df):
@@ -249,9 +272,7 @@ def calc_player_value(df):
         else:
             botw = pd.concat([botw, dfx4_wings])
             
-
-    #11,12,13
-            
+      
     num_c = 0
     num_d = 0
     num_w = 0
@@ -519,11 +540,21 @@ def team_selector_best_top_down(df):
                     num_players += 1   
 
     eg1 = eg[eg['Protect']==1]
-    print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))      
+    print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))
+    print("Team is scored by the following stats: ")     
+    print("+/-: Goal differential. One of many player stats.")
+    print("PS: Player score:  An overall player evaluation stat provided by the NHL")
+    print("Ztot: My own overall player evaluation stat.")    
     exp_team_tot = eg1['adj+/-'].sum()
     team_score = (exp_team_tot - team_Avg_PlusMinus) / team_Std_PlusMinus
-    print("Team score: {:.2f} standard deviations away from the +/- mean".format(team_score))   
-
+    print("Team adj+/- score: {:.2f} standard deviations away from the adj+/- mean".format(team_score))   
+    exp_team_tot = eg1['PS'].sum()
+    team_score = (exp_team_tot - team_Avg_PS) / team_Std_PS
+    print("Team PS score: {:.2f} standard deviations away from the PS mean".format(team_score))   
+    exp_team_tot = eg1['Ztot'].sum()
+    team_score = (exp_team_tot - team_Avg_Ztot) / team_Std_Ztot
+    print("Team Ztot score: {:.2f} standard deviations away from the Ztot mean".format(team_score))   
+ 
 def team_selector_by_team_strength(df, mix):
     """ Picks players by reading a list of teams and choosing the best available player for that team.
         The team list is shuffled if mix=True so that the team is different each time. """
@@ -551,8 +582,8 @@ def team_selector_by_team_strength(df, mix):
     if mix == True:
         team_list = team_Strength.sample(frac=1)
     else:
-        team_list = team_Strength   
-
+        team_list = team_Strength
+    
     for j in range(len(team_list)):
         t = team_list.iat[j,0]
         for i in range(len(eg)):
@@ -657,13 +688,23 @@ def team_selector_by_team_strength(df, mix):
                         eg.iat[i,14] = 1
                         num_defs += 1
                         num_players += 1
-                        break  
-
+                        break
+    
     eg1 = eg[eg['Protect']==1]
-    print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))      
+    print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))
+    print("Team is scored by the following stats: ")     
+    print("+/-: Goal differential. One of many player stats.")
+    print("PS: Player score:  An overall player evaluation stat provided by the NHL")
+    print("Ztot: My own overall player evaluation stat.")        
     exp_team_tot = eg1['adj+/-'].sum()
     team_score = (exp_team_tot - team_Avg_PlusMinus) / team_Std_PlusMinus
-    print("Team score: {:.2f} standard deviations away from the +/- mean".format(team_score))  
+    print("Team adj+/- score: {:.2f} standard deviations away from the adj+/- mean".format(team_score))  
+    exp_team_tot = eg1['PS'].sum()
+    team_score = (exp_team_tot - team_Avg_PS) / team_Std_PS
+    print("Team PS score: {:.2f} standard deviations away from the PS mean".format(team_score))  
+    exp_team_tot = eg1['Ztot'].sum()
+    team_score = (exp_team_tot - team_Avg_Ztot) / team_Std_Ztot
+    print("Team Ztot score: {:.2f} standard deviations away from the Ztot mean".format(team_score))  
 
 def simulate_nhl_exp_draft(year, protect_method, pick_method, mix=False):
     """ Controlling function.  Runs all of the others in order to simulate 
@@ -686,8 +727,8 @@ def simulate_nhl_exp_draft(year, protect_method, pick_method, mix=False):
                  Randomly shuffles the team list, to get a different team each time."""                                                      
         
     df = load_setup(year)
-    calc_base_stats(df)
     df1 = calc_player_value(df) 
+    calc_base_stats(df1)    
     df2 = calc_team_strength(df1, year)
     df3 = remove_first_second_years(df2,year)        
     df4 = reduce_vars(df3)  
