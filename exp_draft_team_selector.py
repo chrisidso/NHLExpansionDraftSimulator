@@ -519,10 +519,10 @@ def team_selector_best_top_down(df):
                     num_players += 1   
 
     eg1 = eg[eg['Protect']==1]
-    print(eg1)      
+    print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))      
     exp_team_tot = eg1['adj+/-'].sum()
     team_score = (exp_team_tot - team_Avg_PlusMinus) / team_Std_PlusMinus
-    print(team_score)  
+    print("Team score: {:.2f} standard deviations away from the +/- mean".format(team_score))   
 
 def team_selector_by_team_strength(df, mix):
     """ Picks players by reading a list of teams and choosing the best available player for that team.
@@ -660,10 +660,10 @@ def team_selector_by_team_strength(df, mix):
                         break  
 
     eg1 = eg[eg['Protect']==1]
-    print(eg1)      
+    print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))      
     exp_team_tot = eg1['adj+/-'].sum()
     team_score = (exp_team_tot - team_Avg_PlusMinus) / team_Std_PlusMinus
-    print(team_score)   
+    print("Team score: {:.2f} standard deviations away from the +/- mean".format(team_score))  
 
 def simulate_nhl_exp_draft(year, protect_method, pick_method, mix=False):
     """ Controlling function.  Runs all of the others in order to simulate 
