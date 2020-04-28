@@ -539,25 +539,254 @@ def team_selector_best_top_down(df):
                     num_defs += 1
                     num_players += 1   
 
-    eg1 = eg[eg['Protect']==1]
-    print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))
-    print("Team is scored by the following stats: ")     
-    print("+/-: Goal differential. One of many player stats.")
-    print("PS: Player score:  An overall player evaluation stat provided by the NHL")
-    print("Ztot: My own overall player evaluation stat.")    
-    exp_team_tot = eg1['adj+/-'].sum()
-    team_score = (exp_team_tot - team_Avg_PlusMinus) / team_Std_PlusMinus
-    print("Team adj+/- score: {:.2f} standard deviations away from the adj+/- mean".format(team_score))   
-    exp_team_tot = eg1['PS'].sum()
-    team_score = (exp_team_tot - team_Avg_PS) / team_Std_PS
-    print("Team PS score: {:.2f} standard deviations away from the PS mean".format(team_score))   
-    exp_team_tot = eg1['Ztot'].sum()
-    team_score = (exp_team_tot - team_Avg_Ztot) / team_Std_Ztot
-    print("Team Ztot score: {:.2f} standard deviations away from the Ztot mean".format(team_score))   
- 
-def team_selector_by_team_strength(df, mix):
-    """ Picks players by reading a list of teams and choosing the best available player for that team.
-        The team list is shuffled if mix=True so that the team is different each time. """
+    display_team(eg[eg['Protect']==1])
+    
+def team_selector_fwd_first(df):
+    """ Selects a team by choosing the allotment of forwards first and then
+    the defensemen. Searches through a list of unprotected players sorted by Ztot."""
+    eg = df.sort_values(by=['Ztot'], ascending = False, axis=0)
+
+    num_fwds = 0
+    num_lws = 0
+    num_rws = 0
+    num_defs = 0
+    num_ctrs = 0
+    team_tracker = []
+    max_fwds = 14
+    max_defs = 9
+    min_lws = 3
+    min_rws = 3
+    min_ctrs = 4
+    max_players = 23
+    num_players = 0
+    min_lws_reached = False
+    min_rws_reached = False
+    min_ctrs_reached = False    
+
+    for i in range(len(eg)):
+        tm = eg.iat[i,2]
+        if not tm in team_tracker and num_fwds < max_fwds:
+            pos = eg.iat[i,3]
+            if pos == 'LW':
+                if min_lws_reached == True:
+                    players_needed = 0
+                    if min_rws_reached == False:
+                        players_needed += (min_rws - num_rws)
+                    if min_ctrs_reached == False:
+                        players_needed += (min_ctrs - num_ctrs)
+                    num_fwds_needed = max_fwds - num_fwds
+                    if players_needed < num_fwds_needed:
+                        #addit
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+            
+                else:
+                    # addit
+                    num_players += 1
+                    num_lws += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_lws >= min_lws:
+                        min_lws_reached = True
+            
+            if pos == 'RW':
+                if min_rws_reached == True:
+                    players_needed = 0
+                    if min_lws_reached == False:
+                        players_needed += (min_lws - num_lws)
+                    if min_ctrs_reached == False:
+                        players_needed += (min_ctrs - num_ctrs)
+                    num_fwds_needed = max_fwds - num_fwds
+                    if players_needed < num_fwds_needed:
+                        #addit
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True
+            
+                else:
+                    # addit
+                    num_players += 1
+                    num_rws += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_rws >= min_rws:
+                        min_rws_reached = True
+                        
+            if pos == 'C':
+                if min_ctrs_reached == True:
+                    players_needed = 0
+                    if min_rws_reached == False:
+                        players_needed += (min_rws - num_rws)
+                    if min_lws_reached == False:
+                        players_needed += (min_lws - num_lws)
+                    num_fwds_needed = max_fwds - num_fwds
+                    if players_needed < num_fwds_needed:
+                        #addit
+                        num_players += 1
+                        num_ctrs += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_ctrs >= min_ctrs:
+                            min_ctrs_reached = True
+            
+                else:
+                    # addit
+                    num_players += 1
+                    num_ctrs += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_ctrs >= min_ctrs:
+                        min_ctrs_reached = True
+
+    for i in range(len(eg)):
+        tm = eg.iat[i,2]
+        if not tm in team_tracker and num_defs < max_defs and eg.iat[i,3] == 'D':
+            # add it
+            team_tracker.append(tm)
+            eg.iat[i,14] = 1
+            num_defs += 1
+            num_players += 1                               
+
+    display_team(eg[eg['Protect']==1])
+    
+def team_selector_def_first(df):
+    """ Chooses a team by selecting the allotment of defensemen first and then the 
+    allotment of forwards.  Searches through a list of players sorted by Ztot."""
+    eg = df.sort_values(by=['Ztot'], ascending = False, axis=0)
+
+    num_fwds = 0
+    num_lws = 0
+    num_rws = 0
+    num_defs = 0
+    num_ctrs = 0
+    team_tracker = []
+    max_fwds = 14
+    max_defs = 9
+    min_lws = 3
+    min_rws = 3
+    min_ctrs = 4
+    max_players = 23
+    num_players = 0
+    min_lws_reached = False
+    min_rws_reached = False
+    min_ctrs_reached = False
+
+    for i in range(len(eg)):
+        tm = eg.iat[i,2]
+        if not tm in team_tracker and num_defs < max_defs and eg.iat[i,3] == 'D':
+            # add it
+            team_tracker.append(tm)
+            eg.iat[i,14] = 1
+            num_defs += 1
+            num_players += 1
+
+    for i in range(len(eg)):
+        tm = eg.iat[i,2]
+        if not tm in team_tracker and num_fwds < max_fwds:
+            pos = eg.iat[i,3]
+            if pos == 'LW':
+                if min_lws_reached == True:
+                    players_needed = 0
+                    if min_rws_reached == False:
+                        players_needed += (min_rws - num_rws)
+                    if min_ctrs_reached == False:
+                        players_needed += (min_ctrs - num_ctrs)
+                    num_fwds_needed = max_fwds - num_fwds
+                    if players_needed < num_fwds_needed:
+                        #addit
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+            
+                else:
+                    # addit
+                    num_players += 1
+                    num_lws += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_lws >= min_lws:
+                        min_lws_reached = True
+            
+            if pos == 'RW':
+                if min_rws_reached == True:
+                    players_needed = 0
+                    if min_lws_reached == False:
+                        players_needed += (min_lws - num_lws)
+                    if min_ctrs_reached == False:
+                        players_needed += (min_ctrs - num_ctrs)
+                    num_fwds_needed = max_fwds - num_fwds
+                    if players_needed < num_fwds_needed:
+                        #addit
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True
+            
+                else:
+                    # addit
+                    num_players += 1
+                    num_rws += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_rws >= min_rws:
+                        min_rws_reached = True
+                        
+            if pos == 'C':
+                if min_ctrs_reached == True:
+                    players_needed = 0
+                    if min_rws_reached == False:
+                        players_needed += (min_rws - num_rws)
+                    if min_lws_reached == False:
+                        players_needed += (min_lws - num_lws)
+                    num_fwds_needed = max_fwds - num_fwds
+                    if players_needed < num_fwds_needed:
+                        #addit
+                        num_players += 1
+                        num_ctrs += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_ctrs >= min_ctrs:
+                            min_ctrs_reached = True
+            
+                else:
+                    # addit
+                    num_players += 1
+                    num_ctrs += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_ctrs >= min_ctrs:
+                        min_ctrs_reached = True           
+
+    display_team(eg[eg['Protect']==1])
+    
+
+def team_selector_by_team_strength(df):
+    """ Picks players by reading a list of teams and choosing the best available 
+    player for that team. """
         
     eg = df.sort_values(by=['Ztot'],ascending=False, axis=0)        
 
@@ -578,11 +807,7 @@ def team_selector_by_team_strength(df, mix):
     min_rws_reached = False
     min_ctrs_reached = False    
 
-    team_list = None    
-    if mix == True:
-        team_list = team_Strength.sample(frac=1)
-    else:
-        team_list = team_Strength
+    team_list = team_Strength    
     
     for j in range(len(team_list)):
         t = team_list.iat[j,0]
@@ -689,8 +914,11 @@ def team_selector_by_team_strength(df, mix):
                         num_defs += 1
                         num_players += 1
                         break
+
+    display_team(eg[eg['Protect']==1])                    
     
-    eg1 = eg[eg['Protect']==1]
+
+def display_team(eg1):    
     print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))
     print("Team is scored by the following stats: ")     
     print("+/-: Goal differential. One of many player stats.")
@@ -706,7 +934,7 @@ def team_selector_by_team_strength(df, mix):
     team_score = (exp_team_tot - team_Avg_Ztot) / team_Std_Ztot
     print("Team Ztot score: {:.2f} standard deviations away from the Ztot mean".format(team_score))  
 
-def simulate_nhl_exp_draft(year, protect_method, pick_method, mix=False):
+def simulate_nhl_exp_draft(year, protect_method, pick_method):
     """ Controlling function.  Runs all of the others in order to simulate 
     an NHL expansion draft.
     Instructions:
@@ -723,8 +951,10 @@ def simulate_nhl_exp_draft(year, protect_method, pick_method, mix=False):
                             list ordered by team strength.
                'topdown' -  reads from a list of unprotected players, ordered by
                             player strength.  Reads the list top down. 
-       4)  Mix - a true false variable. Used when the pick method is 'strength'.
-                 Randomly shuffles the team list, to get a different team each time."""                                                      
+               'deffirst' - Chooses defensemen first, then forwards. Reads the player
+                            list top down.
+               'fwdfirst' - Chooses the forwards first, then the defensemen.  Reads the
+                            player list top down. """                                                      
         
     df = load_setup(year)
     df1 = calc_player_value(df) 
@@ -734,11 +964,15 @@ def simulate_nhl_exp_draft(year, protect_method, pick_method, mix=False):
     df4 = reduce_vars(df3)  
     df5 = team_processor(df4, 2014, protect_method)  
     if pick_method == "strength":       
-        team_selector_by_team_strength(df5, mix)
+        team_selector_by_team_strength(df5)
     elif pick_method == "topdown":
         team_selector_best_top_down(df5)
+    elif pick_method == "fwdfirst":
+        team_selector_fwd_first(df5)
+    elif pick_method == "deffirst":
+        team_selector_def_first(df5)    
     else:
-        print("Invalid pick method. Need to use 'strength' or 'topdown'.") 
+        print("Invalid pick method. Need to use 'strength', 'topdown', 'fwdfirst' or 'deffirst'.") 
 
 
     

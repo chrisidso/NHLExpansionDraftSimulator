@@ -128,8 +128,7 @@ My finished project consists of s series of functions:
     the season.  These players are probably callups late in the season and can have
     weird stats. 
 2) calc_base_stats - sums the +/- stats for the players on each team and calculates
-    the mean and std over all the teams.  Uses this later to evaluate the results of
-    the draft.
+    the mean and std over all the teams.  Does this with the PS stat and the Ztot stat too.  Uses this later to evaluate the results of the draft.
 3) calc_player_value - evaluates the players using their +/- and PTS stats. Score for
     each player is recorded in the Ztot variable.  Ztot = Z-score(+/-) + Z-score(PTS) 
     for each player.
@@ -137,43 +136,43 @@ My finished project consists of s series of functions:
     later reference when drafting a team.
 5) remove_first_second_years - removes first and second year players, since they are
     exempt from the draft.  Thought they should remain in the data during calculations.
-6) reduce_vars - reduces the variable list to lnly those variables that are needed from
+6) reduce_vars - reduces the variable list to only those variables that are needed from
     this point on.  
-7) team_processor - for each team decides which players to protect and then                            
-    creates a dataframe with the unprotected players.
-8) team_selector_by_team_strength - one of two team-selecting functions.  Works by
-    reading from the team_strength list which is ordered by team strength. Selects
-    one player (best player) from each team, following the expansion team limits.
-9) team_selector_best_top_down - the other team-selecting function.  Reads the 
-    unprotected player list from the top down, and selects the best players, tracking
-    the teams the players play for to keep only one player from any given team.
-     
-   NOTE: For both of the team-selecting functions the unprotected player list gets
+7) team_processor - for each team decides which players to protect and then creates a
+    dataframe with the unprotected players.
+8) team_selector_by_team_strength - Selects a team by reading from the team_strength
+    list which is ordered by team strength. For each team selects best available player from the unprotected players list.    
+9) team_selector_best_top_down - Reads the unprotected players list from the top down
+    and selects the best players, tracking the teams the players play for to keep only one player from any given team.
+10) team_selector_fwd_first - Reads the unprotected players list from the top down
+     and selects all the forwards first and then all the defensemen.  
+11) team_selector_def_first - Reads the unprotected players list from the top down
+     and selects all the defensemen first and then all the forwards.
+    
+   NOTE: For each of the team-selecting functions the unprotected player list gets
     sorted by Ztot. When the team-selecting functions run they produce a list of
     the players selected.  At the end of the list (you might need to scroll down a 
-    little) they write out the team score. That number is the sum of the players' 
-    +/- stats which is the evaluated using the team stats calculated by the 
-    calc_base_stats function, to determine how many standard deviations away from the 
-    mean it is. 
+    little) they write out three versions of the team score. One uses the sum of the players' +/- stats, one uses the PS stat, and one uses my own Ztot stat, all of which are evaluated using the team stats calculated by the calc_base_stats function, to determine how many standard deviations away from the 
+    mean the score is. 
 
-10) simulate_nhl_exp_draft - one function to control them all. So you only have to 
+12) simulate_nhl_exp_draft - one function to control them all. So you only have to 
      call one function.   
 
 Also included in this project, are some juypter notebooks. One (project_demo) has the 
 functions above in it so you can run them.  Another one (project_walkthrough) has some
 code I wrote as I was working on this project.  It will run too, and will give you an 
-idea of what this project does, and of the problems I faced, how I dealt with them, and  
+idea of what this project does, and of the problems I faced, how I dealt with them, and 
 of my thoughts as I worked on this.
 
 There is work still to be done on this project in addition to the abovementioned NMC
-data.  There are couple more methods I can think of by which a team could be selected
+data.  There is one more method I can think of by which a team could be selected
 from the list of unprotected players.  And I might be able to add age constraints for
 players protected or for players selected.  
 
 Ex:  Only protect players who are 35 years old or younger, or maybe 25 years old
 or older.   Or only select players between 25 and 30 years old.
 
-I have run this simulator many times now, and it looks like the results are mostly
+I have run this simulator many times now, and it looks like the results (+/-) are mostly
 in a range between 1.2 and about 1.8. So it looks like our team will be pretty good.
 I expect the other teams in the league will be more prepared for this expansion draft
 than they were for the last one (in 2017) so we probably will not do quite as well
