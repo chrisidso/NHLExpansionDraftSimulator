@@ -119,7 +119,7 @@ of the abovementioned player stats.
 This proved to be the biggest challenge in this project.  Other challenges include
 how to handle trades (more than one line in the data for traded player), handling of a changing posotion list in the data, how to decide which players a team should protect, and which players to draft, since at this stage I know very little about the players.   
 
-My finished project consists of s series of functions:
+My finished project consists of a series of functions:
 
 1) load_setup(year)   -   Takes the year (2011 - 2019) and adds some variables,
     does some cleanup (trades) and removes players who played <=20 games during 
