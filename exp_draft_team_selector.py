@@ -15,8 +15,16 @@ team_Avg_Ztot = 0.0
 team_Std_Ztot = 0.0
 team_Avg_PS = 0.0
 team_Std_PS = 0.0
-
 team_Strength = None
+
+# Noticed that in the player data, the list of values for Position ('Pos') changes
+# occasionally. From 2011 to 2016 the list was 'C', 'D', 'LW' and 'RW'.  From
+# From 2017 to 2019 'W' was added, and in 2020 'F' was added.  A player who is 
+# listed as 'F' probably spends most of his time on the ice as a wing, since there
+# are more centers in the league than wings. So 'F' and 'W' are considered 
+# interchangeable. 
+POSITION_LIST_WINGS = ['LW', 'RW', 'W', 'F']  
+ 
 
 def load_setup(year):
     """ This function loads the original data to a dataframe and handles the initial 
@@ -57,6 +65,11 @@ def load_setup(year):
         temp = df0.iat[i,1]
         place = temp.find('\\')
         df0.iat[i,1] = temp[0:place]  
+
+    # Over time the NHL changed the abbreviations for the player's positions.
+    # Data from 2020 adds 'C; LW'.  Need to account for these changes.  There
+    # are very few of these, so we will consider 'C; LW' to be 'C'.
+    df0.replace(to_replace='C; LW', value='C', inplace=True)
 
     global Teams
     Teams = df0['Tm'].unique()   
@@ -207,7 +220,7 @@ def calc_player_value(df):
         # Top two wings
         num_topw = 0
         for i in range(len(dfx1)):
-            if dfx1.iat[i,4] == 'LW' or dfx1.iat[i,3] == 'RW':
+            if dfx1.iat[i,4] in POSITION_LIST_WINGS:
                 dfx1.iat[i,32] = 1
                 num_topw += 1
             if num_topw == 2:
@@ -221,6 +234,7 @@ def calc_player_value(df):
             
         dfx2 = dfx1[dfx1['Status']==0]  
         
+        # Top four defensemen
         num_topd = 0
         for i in range(len(dfx2)):
             if dfx2.iat[i,4] == 'D':
@@ -237,9 +251,10 @@ def calc_player_value(df):
         
         dfx3 = dfx2[dfx2['Status']==0]
         
+        # The next two wings
         num_lev2f = 0
         for i in range(len(dfx3)):
-            if dfx3.iat[i,4] == 'RW' or dfx3.iat[i,3] == 'LW':
+            if dfx3.iat[i,4] in POSITION_LIST_WINGS:
                 dfx3.iat[i,32] = 1
                 num_lev2f += 1
             if num_lev2f == 2:
@@ -255,7 +270,7 @@ def calc_player_value(df):
         
         dfx4_def = dfx4[dfx4['Pos']=='D']
         dfx4_cent = dfx4[dfx4['Pos']=='C']
-        dfx4_wings = dfx4[(dfx4['Pos']=='LW') | (dfx4['Pos']=='RW')]
+        dfx4_wings = dfx4[(dfx4['Pos']=='LW') | (dfx4['Pos']=='RW') | (dfx4['Pos']=='W') | (dfx4['Pos']=='F')]
         
         if botd is None:
             botd = dfx4_def
@@ -295,7 +310,7 @@ def calc_player_value(df):
                 df.iat[i,33] = (df.iat[i,29] - botd['adj+/-'].mean()) / botd['adj+/-'].std()
                 df.iat[i,34] = (df.iat[i,28] - botd['adjPTS'].mean()) / botd['adjPTS'].std() 
                 
-        if df.iat[i,4] == 'RW' or df.iat[i,4] == 'LW':
+        if df.iat[i,4] in POSITION_LIST_WINGS:
             num_w += 1
             if num_w <= 2:
                 df.iat[i,33] = (df.iat[i,29] - topw['adj+/-'].mean()) / topw['adj+/-'].std()
@@ -529,8 +544,92 @@ def team_selector_best_top_down(df):
                         team_tracker.append(tm)
                         if num_ctrs >= min_ctrs:
                             min_ctrs_reached = True
-                            
-                
+
+                if pos == 'W' or pos == 'F':
+                    if min_lws_reached == True and min_rws_reached == True:
+                        players_needed = 0
+                        if min_ctrs_reached == False:
+                            players_needed += (min_ctrs - num_ctrs)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed: 
+                            # add it - but which position
+                            if num_lws < num_rws:
+                                # add as lw
+                                num_players += 1
+                                num_lws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_lws >= min_lws:
+                                    min_lws_reached = True
+                            elif num_rws < num_lws:
+                                # add as rw
+                                num_players += 1
+                                num_rws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_rws >= min_rws:
+                                    min_rws_reached = True
+                            else:
+                                # flip a coin
+                                if np.random.rand() < 0.5:
+                                    # add as lw
+                                    num_players += 1
+                                    num_lws += 1
+                                    num_fwds += 1
+                                    eg.iat[i,14] = 1
+                                    team_tracker.append(tm)
+                                    if num_lws >= min_lws:
+                                        min_lws_reached = True
+                                else:
+                                    # add as rw
+                                    num_players += 1
+                                    num_rws += 1
+                                    num_fwds += 1
+                                    eg.iat[i,14] = 1
+                                    team_tracker.append(tm)
+                                    if num_rws >= min_rws:
+                                        min_rws_reached = True
+                    elif min_lws_reached == True and min_rws_reached == False:
+                        # add as rw
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True
+                    elif nim_rws_reached == True and min_lws_reached == False:
+                        # add as lw
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+                    else:
+                        # flip a coin
+                        if np.random.rand() < 0.5:
+                            # add as lw
+                            num_players += 1
+                            num_lws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_lws >= min_lws:
+                                min_lws_reached = True
+                        else:
+                            # add as rw
+                            num_players += 1
+                            num_rws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_rws >= min_rws:
+                                min_rws_reached = True 
+                                
             else:    
                 if pos == 'D' and num_defs < max_defs:
                     # add it
@@ -650,6 +749,91 @@ def team_selector_fwd_first(df):
                     team_tracker.append(tm)
                     if num_ctrs >= min_ctrs:
                         min_ctrs_reached = True
+
+            if pos == 'W' or pos == 'F':
+                if min_lws_reached == True and min_rws_reached == True:
+                    players_needed = 0
+                    if min_ctrs_reached == False:
+                        players_needed += (min_ctrs - num_ctrs)
+                    num_fwds_needed = max_fwds - num_fwds
+                    if players_needed < num_fwds_needed: 
+                        # add it - but which position
+                        if num_lws < num_rws:
+                            # add as lw
+                            num_players += 1
+                            num_lws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_lws >= min_lws:
+                                min_lws_reached = True
+                        elif num_rws < num_lws:
+                            # add as rw
+                            num_players += 1
+                            num_rws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_rws >= min_rws:
+                                min_rws_reached = True
+                        else:
+                            # flip a coin
+                            if np.random.rand() < 0.5:
+                                # add as lw
+                                num_players += 1
+                                num_lws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_lws >= min_lws:
+                                    min_lws_reached = True
+                            else:
+                                # add as rw
+                                num_players += 1
+                                num_rws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_rws >= min_rws:
+                                    min_rws_reached = True
+                elif min_lws_reached == True and min_rws_reached == False:
+                    # add as rw
+                    num_players += 1
+                    num_rws += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_rws >= min_rws:
+                        min_rws_reached = True
+                elif nim_rws_reached == True and min_lws_reached == False:
+                    # add as lw
+                    num_players += 1
+                    num_lws += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_lws >= min_lws:
+                        min_lws_reached = True
+                else:
+                    # flip a coin
+                    if np.random.rand() < 0.5:
+                        # add as lw
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+                    else:
+                        # add as rw
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True             
 
     for i in range(len(eg)):
         tm = eg.iat[i,2]
@@ -779,7 +963,92 @@ def team_selector_def_first(df):
                     eg.iat[i,14] = 1
                     team_tracker.append(tm)
                     if num_ctrs >= min_ctrs:
-                        min_ctrs_reached = True           
+                        min_ctrs_reached = True   
+
+            if pos == 'W' or pos == 'F':
+                if min_lws_reached == True and min_rws_reached == True:
+                    players_needed = 0
+                    if min_ctrs_reached == False:
+                        players_needed += (min_ctrs - num_ctrs)
+                    num_fwds_needed = max_fwds - num_fwds
+                    if players_needed < num_fwds_needed: 
+                        # add it - but which position
+                        if num_lws < num_rws:
+                            # add as lw
+                            num_players += 1
+                            num_lws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_lws >= min_lws:
+                                min_lws_reached = True
+                        elif num_rws < num_lws:
+                            # add as rw
+                            num_players += 1
+                            num_rws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_rws >= min_rws:
+                                min_rws_reached = True
+                        else:
+                            # flip a coin
+                            if np.random.rand() < 0.5:
+                                # add as lw
+                                num_players += 1
+                                num_lws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_lws >= min_lws:
+                                    min_lws_reached = True
+                            else:
+                                # add as rw
+                                num_players += 1
+                                num_rws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_rws >= min_rws:
+                                    min_rws_reached = True
+                elif min_lws_reached == True and min_rws_reached == False:
+                    # add as rw
+                    num_players += 1
+                    num_rws += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_rws >= min_rws:
+                        min_rws_reached = True
+                elif nim_rws_reached == True and min_lws_reached == False:
+                    # add as lw
+                    num_players += 1
+                    num_lws += 1
+                    num_fwds += 1
+                    eg.iat[i,14] = 1
+                    team_tracker.append(tm)
+                    if num_lws >= min_lws:
+                        min_lws_reached = True
+                else:
+                    # flip a coin
+                    if np.random.rand() < 0.5:
+                        # add as lw
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+                    else:
+                        # add as rw
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True                     
 
     display_team(eg[eg['Protect']==1])
     
@@ -903,8 +1172,100 @@ def team_selector_by_team_strength(df):
                             #team_tracker.append(tm)
                             if num_ctrs >= min_ctrs:
                                 min_ctrs_reached = True
+                            break   
+
+                    if pos == 'W' or pos == 'F':
+                        if min_lws_reached == True and min_rws_reached == True:
+                            players_needed = 0
+                            if min_ctrs_reached == False:
+                                players_needed += (min_ctrs - num_ctrs)
+                            num_fwds_needed = max_fwds - num_fwds
+                            if players_needed < num_fwds_needed: 
+                                # add it - but which position
+                                if num_lws < num_rws:
+                                    # add as lw
+                                    num_players += 1
+                                    num_lws += 1
+                                    num_fwds += 1
+                                    eg.iat[i,14] = 1
+                                    team_tracker.append(tm)
+                                    if num_lws >= min_lws:
+                                        min_lws_reached = True
+                                    break    
+                                elif num_rws < num_lws:
+                                    # add as rw
+                                    num_players += 1
+                                    num_rws += 1
+                                    num_fwds += 1
+                                    eg.iat[i,14] = 1
+                                    team_tracker.append(tm)
+                                    if num_rws >= min_rws:
+                                        min_rws_reached = True
+                                    break    
+                                else:
+                                    # flip a coin
+                                    if np.random.rand() < 0.5:
+                                        # add as lw
+                                        num_players += 1
+                                        num_lws += 1
+                                        num_fwds += 1
+                                        eg.iat[i,14] = 1
+                                        team_tracker.append(tm)
+                                        if num_lws >= min_lws:
+                                            min_lws_reached = True
+                                        break    
+                                    else:
+                                        # add as rw
+                                        num_players += 1
+                                        num_rws += 1
+                                        num_fwds += 1
+                                        eg.iat[i,14] = 1
+                                        team_tracker.append(tm)
+                                        if num_rws >= min_rws:
+                                            min_rws_reached = True
+                                        break    
+                        elif min_lws_reached == True and min_rws_reached == False:
+                            # add as rw
+                            num_players += 1
+                            num_rws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_rws >= min_rws:
+                                min_rws_reached = True
                             break    
-                                
+                        elif nim_rws_reached == True and min_lws_reached == False:
+                            # add as lw
+                            num_players += 1
+                            num_lws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_lws >= min_lws:
+                                min_lws_reached = True
+                            break    
+                        else:
+                            # flip a coin
+                            if np.random.rand() < 0.5:
+                                # add as lw
+                                num_players += 1
+                                num_lws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_lws >= min_lws:
+                                    min_lws_reached = True
+                                break    
+                            else:
+                                # add as rw
+                                num_players += 1
+                                num_rws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_rws >= min_rws:
+                                    min_rws_reached = True
+                                break  
                     
                 else:    
                     if pos == 'D' and num_defs < max_defs:

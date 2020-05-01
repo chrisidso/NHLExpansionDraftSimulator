@@ -117,9 +117,7 @@ that could be applied to all forwards and defensemen, and would involve all thre
 of the abovementioned player stats.
 
 This proved to be the biggest challenge in this project.  Other challenges include
-how to handle trades (more than one line in the data for traded player), how to 
-decide which players a team should protect, and which players to draft, since at this 
-stage I know very little about the players.   
+how to handle trades (more than one line in the data for traded player), handling of a changing posotion list in the data, how to decide which players a team should protect, and which players to draft, since at this stage I know very little about the players.   
 
 My finished project consists of s series of functions:
 
