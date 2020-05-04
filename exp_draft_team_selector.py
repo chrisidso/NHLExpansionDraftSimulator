@@ -638,7 +638,7 @@ def team_selector_best_top_down(df):
                     num_defs += 1
                     num_players += 1   
 
-    display_team(eg[eg['Protect']==1])
+    _display_team(eg[eg['Protect']==1])
     
 def team_selector_fwd_first(df):
     """ Selects a team by choosing the allotment of forwards first and then
@@ -844,7 +844,7 @@ def team_selector_fwd_first(df):
             num_defs += 1
             num_players += 1                               
 
-    display_team(eg[eg['Protect']==1])
+    _display_team(eg[eg['Protect']==1])
     
 def team_selector_def_first(df):
     """ Chooses a team by selecting the allotment of defensemen first and then the 
@@ -1050,8 +1050,421 @@ def team_selector_def_first(df):
                         if num_rws >= min_rws:
                             min_rws_reached = True                     
 
-    display_team(eg[eg['Protect']==1])
-    
+    _display_team(eg[eg['Protect']==1])
+
+
+def team_selector_alternate(df):
+    """ Selects a team by choosing nine defensemen and nine forwards, alternating
+    between them.  Then picks five more forwards to round out the team."""
+    eg = df.sort_values(by=['Ztot'],ascending=False, axis=0) 
+
+    num_fwds = 0
+    num_lws = 0
+    num_rws = 0
+    num_defs = 0
+    num_ctrs = 0
+    team_tracker = []
+    max_fwds = 14
+    max_defs = 9
+    min_lws = 3
+    min_rws = 3
+    min_ctrs = 4
+    max_players = 23
+    num_players = 0
+    min_lws_reached = False
+    min_rws_reached = False
+    min_ctrs_reached = False    
+
+    for j in range(9):
+        # Find a forward
+        for i in range(len(eg)):
+            tm = eg.iat[i,2]
+            if not tm in team_tracker and not eg.iat[i,3] == 'D' and eg.iat[i,14] == 0:
+                pos = eg.iat[i,3]
+                if pos == 'LW':
+                    if min_lws_reached == True:
+                        players_needed = 0
+                        if min_rws_reached == False:
+                            players_needed += (min_rws - num_rws)
+                        if min_ctrs_reached == False:
+                            players_needed += (min_ctrs - num_ctrs)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed:
+                            #addit
+                            num_players += 1
+                            num_lws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_lws >= min_lws:
+                                min_lws_reached = True
+                            break    
+                
+                    else:
+                        # addit
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+                        break    
+                
+                if pos == 'RW':
+                    if min_rws_reached == True:
+                        players_needed = 0
+                        if min_lws_reached == False:
+                            players_needed += (min_lws - num_lws)
+                        if min_ctrs_reached == False:
+                            players_needed += (min_ctrs - num_ctrs)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed:
+                            #addit
+                            num_players += 1
+                            num_rws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_rws >= min_rws:
+                                min_rws_reached = True
+                            break    
+                
+                    else:
+                        # addit
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True
+                        break    
+                            
+                if pos == 'C':
+                    if min_ctrs_reached == True:
+                        players_needed = 0
+                        if min_rws_reached == False:
+                            players_needed += (min_rws - num_rws)
+                        if min_lws_reached == False:
+                            players_needed += (min_lws - num_lws)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed:
+                            #addit
+                            num_players += 1
+                            num_ctrs += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_ctrs >= min_ctrs:
+                                min_ctrs_reached = True
+                            break    
+                
+                    else:
+                        # addit
+                        num_players += 1
+                        num_ctrs += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_ctrs >= min_ctrs:
+                            min_ctrs_reached = True
+                        break       
+
+                if pos == 'W' or pos == 'F':
+                    if min_lws_reached == True and min_rws_reached == True:
+                        players_needed = 0
+                        if min_ctrs_reached == False:
+                            players_needed += (min_ctrs - num_ctrs)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed: 
+                            # add it - but which position
+                            if num_lws < num_rws:
+                                # add as lw
+                                num_players += 1
+                                num_lws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_lws >= min_lws:
+                                    min_lws_reached = True
+                                break    
+                            elif num_rws < num_lws:
+                                # add as rw
+                                num_players += 1
+                                num_rws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_rws >= min_rws:
+                                    min_rws_reached = True
+                                break    
+                            else:
+                                # flip a coin
+                                if np.random.rand() < 0.5:
+                                    # add as lw
+                                    num_players += 1
+                                    num_lws += 1
+                                    num_fwds += 1
+                                    eg.iat[i,14] = 1
+                                    team_tracker.append(tm)
+                                    if num_lws >= min_lws:
+                                        min_lws_reached = True
+                                    break    
+                                else:
+                                    # add as rw
+                                    num_players += 1
+                                    num_rws += 1
+                                    num_fwds += 1
+                                    eg.iat[i,14] = 1
+                                    team_tracker.append(tm)
+                                    if num_rws >= min_rws:
+                                        min_rws_reached = True
+                                    break    
+                    elif min_lws_reached == True and min_rws_reached == False:
+                        # add as rw
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True
+                        break    
+                    elif nim_rws_reached == True and min_lws_reached == False:
+                        # add as lw
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+                        break    
+                    else:
+                        # flip a coin
+                        if np.random.rand() < 0.5:
+                            # add as lw
+                            num_players += 1
+                            num_lws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_lws >= min_lws:
+                                min_lws_reached = True
+                            break    
+                        else:
+                            # add as rw
+                            num_players += 1
+                            num_rws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm) 
+                            if num_rws >= min_rws:
+                                min_rws_reached = True
+                            break
+
+        for i in range(len(eg)):
+            # Find defenseman
+            tm = eg.iat[i,2]
+            if not tm in team_tracker and eg.iat[i,3] == 'D' and eg.iat[i,14] == 0:
+                team_tracker.append(tm)
+                eg.iat[i,14] = 1
+                num_defs += 1
+                num_players += 1   
+                break                               
+
+    for j in range(5):
+        # Find five more forwards
+        for i in range(len(eg)):
+            tm = eg.iat[i,2]
+            if not tm in team_tracker and not eg.iat[i,3] == 'D' and eg.iat[i,14] == 0:
+                pos = eg.iat[i,3]
+                if pos == 'LW':
+                    if min_lws_reached == True:
+                        players_needed = 0
+                        if min_rws_reached == False:
+                            players_needed += (min_rws - num_rws)
+                        if min_ctrs_reached == False:
+                            players_needed += (min_ctrs - num_ctrs)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed:
+                            #addit
+                            num_players += 1
+                            num_lws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_lws >= min_lws:
+                                min_lws_reached = True
+                            break    
+                
+                    else:
+                        # addit
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+                        break    
+                
+                if pos == 'RW':
+                    if min_rws_reached == True:
+                        players_needed = 0
+                        if min_lws_reached == False:
+                            players_needed += (min_lws - num_lws)
+                        if min_ctrs_reached == False:
+                            players_needed += (min_ctrs - num_ctrs)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed:
+                            #addit
+                            num_players += 1
+                            num_rws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_rws >= min_rws:
+                                min_rws_reached = True
+                            break    
+                
+                    else:
+                        # addit
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True
+                        break    
+                            
+                if pos == 'C':
+                    if min_ctrs_reached == True:
+                        players_needed = 0
+                        if min_rws_reached == False:
+                            players_needed += (min_rws - num_rws)
+                        if min_lws_reached == False:
+                            players_needed += (min_lws - num_lws)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed:
+                            #addit
+                            num_players += 1
+                            num_ctrs += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_ctrs >= min_ctrs:
+                                min_ctrs_reached = True
+                            break    
+                
+                    else:
+                        # addit
+                        num_players += 1
+                        num_ctrs += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_ctrs >= min_ctrs:
+                            min_ctrs_reached = True
+                        break       
+
+                if pos == 'W' or pos == 'F':
+                    if min_lws_reached == True and min_rws_reached == True:
+                        players_needed = 0
+                        if min_ctrs_reached == False:
+                            players_needed += (min_ctrs - num_ctrs)
+                        num_fwds_needed = max_fwds - num_fwds
+                        if players_needed < num_fwds_needed: 
+                            # add it - but which position
+                            if num_lws < num_rws:
+                                # add as lw
+                                num_players += 1
+                                num_lws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_lws >= min_lws:
+                                    min_lws_reached = True
+                                break    
+                            elif num_rws < num_lws:
+                                # add as rw
+                                num_players += 1
+                                num_rws += 1
+                                num_fwds += 1
+                                eg.iat[i,14] = 1
+                                team_tracker.append(tm)
+                                if num_rws >= min_rws:
+                                    min_rws_reached = True
+                                break    
+                            else:
+                                # flip a coin
+                                if np.random.rand() < 0.5:
+                                    # add as lw
+                                    num_players += 1
+                                    num_lws += 1
+                                    num_fwds += 1
+                                    eg.iat[i,14] = 1
+                                    team_tracker.append(tm)
+                                    if num_lws >= min_lws:
+                                        min_lws_reached = True
+                                    break    
+                                else:
+                                    # add as rw
+                                    num_players += 1
+                                    num_rws += 1
+                                    num_fwds += 1
+                                    eg.iat[i,14] = 1
+                                    team_tracker.append(tm)
+                                    if num_rws >= min_rws:
+                                        min_rws_reached = True
+                                    break    
+                    elif min_lws_reached == True and min_rws_reached == False:
+                        # add as rw
+                        num_players += 1
+                        num_rws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_rws >= min_rws:
+                            min_rws_reached = True
+                        break    
+                    elif nim_rws_reached == True and min_lws_reached == False:
+                        # add as lw
+                        num_players += 1
+                        num_lws += 1
+                        num_fwds += 1
+                        eg.iat[i,14] = 1
+                        team_tracker.append(tm)
+                        if num_lws >= min_lws:
+                            min_lws_reached = True
+                        break    
+                    else:
+                        # flip a coin
+                        if np.random.rand() < 0.5:
+                            # add as lw
+                            num_players += 1
+                            num_lws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm)
+                            if num_lws >= min_lws:
+                                min_lws_reached = True
+                            break    
+                        else:
+                            # add as rw
+                            num_players += 1
+                            num_rws += 1
+                            num_fwds += 1
+                            eg.iat[i,14] = 1
+                            team_tracker.append(tm) 
+                            if num_rws >= min_rws:
+                                min_rws_reached = True
+                            break
+
+    _display_team(eg[eg['Protect']==1])                        
+
 
 def team_selector_by_team_strength(df):
     """ Picks players by reading a list of teams and choosing the best available 
@@ -1276,10 +1689,10 @@ def team_selector_by_team_strength(df):
                         num_players += 1
                         break
 
-    display_team(eg[eg['Protect']==1])                    
+    _display_team(eg[eg['Protect']==1])                    
     
 
-def display_team(eg1):    
+def _display_team(eg1):    
     print(eg1.iloc[:,[0,1,2,3,6,7,8,9,13]].round(2))
     print("Team is scored by the following stats: ")     
     print("+/-: Goal differential. One of many player stats.")
@@ -1315,7 +1728,9 @@ def simulate_nhl_exp_draft(year, protect_method, pick_method):
                'deffirst' - Chooses defensemen first, then forwards. Reads the player
                             list top down.
                'fwdfirst' - Chooses the forwards first, then the defensemen.  Reads the
-                            player list top down. """                                                      
+                            player list top down. 
+               'alternate'- Chooses nine forwards and nine defensemen in alternating
+                            fashion and then add the last five forwards.  """                                                      
         
     df = load_setup(year)
     df1 = calc_player_value(df) 
@@ -1331,7 +1746,9 @@ def simulate_nhl_exp_draft(year, protect_method, pick_method):
     elif pick_method == "fwdfirst":
         team_selector_fwd_first(df5)
     elif pick_method == "deffirst":
-        team_selector_def_first(df5)    
+        team_selector_def_first(df5)
+    elif pick_method == "alternate":
+        team_selector_alternate(df5)
     else:
         print("Invalid pick method. Need to use 'strength', 'topdown', 'fwdfirst' or 'deffirst'.") 
 

@@ -117,7 +117,7 @@ that could be applied to all forwards and defensemen, and would involve all thre
 of the abovementioned player stats.
 
 This proved to be the biggest challenge in this project.  Other challenges include
-how to handle trades (more than one line in the data for traded player), handling of a changing posotion list in the data, how to decide which players a team should protect, and which players to draft, since at this stage I know very little about the players.   
+how to handle trades (more than one line in the data for traded player), handling of a changing position list in the data, how to decide which players a team should protect, and which players to draft, since at this stage I know very little about the players.   
 
 My finished project consists of a series of functions:
 
@@ -146,6 +146,8 @@ My finished project consists of a series of functions:
      and selects all the forwards first and then all the defensemen.  
 11) team_selector_def_first - Reads the unprotected players list from the top down
      and selects all the defensemen first and then all the forwards.
+12) team_selector_alternate - Reads the unprotected player list and selects nine
+     forwards and nine defensemen in alternating fashion, then adds five more forwards to round out the team.     
     
    NOTE: For each of the team-selecting functions the unprotected player list gets
     sorted by Ztot. When the team-selecting functions run they produce a list of
@@ -153,7 +155,7 @@ My finished project consists of a series of functions:
     little) they write out three versions of the team score. One uses the sum of the players' +/- stats, one uses the PS stat, and one uses my own Ztot stat, all of which are evaluated using the team stats calculated by the calc_base_stats function, to determine how many standard deviations away from the 
     mean the score is. 
 
-12) simulate_nhl_exp_draft - one function to control them all. So you only have to 
+13) simulate_nhl_exp_draft - one function to control them all. So you only have to 
      call one function.   
 
 Also included in this project, are some juypter notebooks. One (project_demo) has the 
@@ -163,9 +165,8 @@ idea of what this project does, and of the problems I faced, how I dealt with th
 of my thoughts as I worked on this.
 
 There is work still to be done on this project in addition to the abovementioned NMC
-data.  There is one more method I can think of by which a team could be selected
-from the list of unprotected players.  And I might be able to add age constraints for
-players protected or for players selected.  
+data.  I may need to find a way to correct the player evaluations for the 
+strength of the team they play for.  And I might be able to add age constraints for players protected or for players selected.  
 
 Ex:  Only protect players who are 35 years old or younger, or maybe 25 years old
 or older.   Or only select players between 25 and 30 years old.
