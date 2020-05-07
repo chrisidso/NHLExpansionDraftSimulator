@@ -67,7 +67,7 @@ def load_setup(year):
         df0.iat[i,1] = temp[0:place]  
 
     # Over time the NHL changed the abbreviations for the player's positions.
-    # Data from 2020 adds 'C; LW'.  Need to account for these changes.  There
+    # Data from 2019 adds 'C; LW'.  Need to account for these changes.  There
     # are very few of these, so we will consider 'C; LW' to be 'C'.
     df0.replace(to_replace='C; LW', value='C', inplace=True)
 
@@ -99,7 +99,7 @@ def remove_first_second_years(df, year):
 
 def _not_enough_games(df):
     """ Removes players who played less than 20 games.   These players were probably call-ups
-    late in the season."""
+    late in the season."""         
     return df[df['GP']>20]
 
 def reduce_vars(df):
@@ -337,15 +337,36 @@ def team_processor(df, year, strategy):
     3)  "hybrid" - for each team it makes a decision as to which of the first two 
         methods to use. 
         
-    Notes:  "any8" Selects four defensemen, and only four forwards so it this method 
-            is used the resulting list of of unprotected players will when sorted 
+    Notes:  "any8" Selects four defensemen, and only four forwards so when this method 
+            is used the resulting list of unprotected players will when sorted 
             by player strength have lots of forwards at the top. Resulting team will 
             be forward heavy.
 
             "split73" If this method is chosen more forwards will be protected so the
             resulting team will be defensemen heavy. """ 
 
-    temp_df = None    
+    temp_df = None 
+    # Add a column to indicate which players are being protected.
+    df['Protect'] = 0
+    # Load the nmc data and add it to the dataframe - only have this data for 2020
+    if year == 2019:
+        fname = "nmc" + str(year) + ".csv"
+        df_nmc = pd.read_csv(fname,header=0, encoding='utf_16')
+        nmc_players = list(df_nmc['Name'])
+        for i in range(len(df)):
+            if df.iat[i,0] in nmc_players:
+                df.iat[i,14] = 1
+
+    # Teams are supposed to leave unprotected two forwards and one defenseman
+    # who played at least 40 games in current season or 70 games in current plus
+    # previous season. This limit may not apply in 2020 due to coronavirus.
+    # Turns out that 2012-2013 season was strike shortened (48 games). Need to
+    # allow for that too.
+    num_games = 40
+    if year == 2019:
+        num_games = 33    
+    if year == 2012:
+        num_games = 24
 
     #path = './' + str(year)
     for team in Teams:
@@ -356,13 +377,11 @@ def team_processor(df, year, strategy):
         
         df2_myteam = df[df['Tm'] == team]         
                     
-        df2_myteam.sort_values(by=['adjTOI'],axis=0,inplace=True, ascending=False)   
-        # Played small number of games indicating a call up near the end of the season
-        df2_red_gp = df2_myteam[df2_myteam['GP'] > 41]    
+        df2_myteam.sort_values(by=['adjTOI'],axis=0,inplace=True, ascending=False)       
+        
+        df2_red_gp = df2_myteam[df2_myteam['GP'] > num_games]    
         # Too old - no point in protecting these players.
-        df2_red_age2 = df2_red_gp[df2_red_gp['Age'] < 39]
-        # Add a column to indicate which players are being protected.
-        df2_red_age2['Protect'] = 0       
+        df2_red_age2 = df2_red_gp[df2_red_gp['Age'] < 39]           
 
         # Determine whether to protect any eight skaters or 7 fwd and 3 def.   
         num_def_protected = 0
@@ -378,7 +397,7 @@ def team_processor(df, year, strategy):
                     def_tot_count += 1
                     
             def_top8_count = 0
-            for i in range(8):
+            for i in range(8):                
                 if df2_red_age2.iat[i,3] == 'D':            
                     def_top8_count += 1
                     
@@ -398,7 +417,8 @@ def team_processor(df, year, strategy):
         def_count = 0   
         for i in range(len(df2_red_age2)):
             if df2_red_age2.iat[i,3] == 'D':
-                df2_red_age2.iat[i,14] = 1
+                if not df2_red_age2.iat[i,14] == 1:               
+                    df2_red_age2.iat[i,14] = 1
                 def_count += 1
             if def_count == num_def_protected:
                 break
@@ -413,7 +433,8 @@ def team_processor(df, year, strategy):
         fwd_count = 0    
         for i in range(len(df2_red_age2)):
             if not df2_red_age2.iat[i,3] == 'D':
-                df2_red_age2.iat[i,14] = 1
+                if not df2_red_age2.iat[i,14] == 1:
+                    df2_red_age2.iat[i,14] = 1                
                 fwd_count += 1
             if fwd_count == num_fwd_protected:
                 break 
@@ -1738,7 +1759,7 @@ def simulate_nhl_exp_draft(year, protect_method, pick_method):
     df2 = calc_team_strength(df1, year)
     df3 = remove_first_second_years(df2,year)        
     df4 = reduce_vars(df3)  
-    df5 = team_processor(df4, 2014, protect_method)  
+    df5 = team_processor(df4, year, protect_method)  
     if pick_method == "strength":       
         team_selector_by_team_strength(df5)
     elif pick_method == "topdown":

@@ -21,7 +21,7 @@ The Mariners remained a bad team for years, and could only watch as their sister
 expansion team, the Toronto Blue Jays, improved and eventually won two world series 
 in the early 1990's. The Mariners still have not been to the World Series.
 
-The Seahawks faired somewhat better, winning nine games in their third year, and
+The Seahawks fared somewhat better, winning nine games in their third year, and
 finally winning the superbowl in 2014.  Their sister expansion team, the Tampa Bay
 Buccaneers, didn't win a game until late in their second year, but won a superbowl
 before the Seahwks did, in the early 2000's.
@@ -40,9 +40,9 @@ and find a list of transactions made by the Knights related to their expansion d
 and the entry draft that followed.
 
 It seems there were two main reasons for their success. One was the rules for the 
-expansion draft, which does not let a team protect as many players as they would
-like, which leaves quite a few good players on the table. The other was 
-the trades they were able to make, which allowed them to acquire more draft picks 
+expansion draft, which do not let a team protect as many players as they would
+like, which leaves quite a few good players on the table. The other was the trades
+they were able to make, which allowed them to acquire more draft picks 
 (some in the first round).  
 
 Trade Ex:  
@@ -76,8 +76,7 @@ into a spreadsheet and save it to a csv file.  Then it loads easily into a dataf
 
 I was able to get data for skaters for the years 2011 to 2019. And data on player
 debuts from 2010 to 2019. I also found data on-line for players in 2019-2020 who had a 
-No Movement Clause (NMC) in their contract.  I would like to add this to my project
-(but only for 2019-2020) because NMC's are addressed in the NHL's expansion draft rules.
+No Movement Clause (NMC) in their contract.  This has been added too (but only for 2019-2020) because NMC's are addressed in the NHL's expansion draft rules.
 
 Here are the Expansion Draft rules:
 1) Expansion team can take only one player from any given team.  
@@ -117,7 +116,7 @@ that could be applied to all forwards and defensemen, and would involve all thre
 of the abovementioned player stats.
 
 This proved to be the biggest challenge in this project.  Other challenges include
-how to handle trades (more than one line in the data for traded player), handling of a changing position list in the data, how to decide which players a team should protect, and which players to draft, since at this stage I know very little about the players.   
+how to handle trades (more than one line in the data for traded player), handling of a changing position list in the data, a strike-shortened season (2012), and a season shortened by coronavirus (2019).     
 
 My finished project consists of a series of functions:
 
@@ -164,9 +163,7 @@ code I wrote as I was working on this project.  It will run too, and will give y
 idea of what this project does, and of the problems I faced, how I dealt with them, and 
 of my thoughts as I worked on this.
 
-There is work still to be done on this project in addition to the abovementioned NMC
-data.  I may need to find a way to correct the player evaluations for the 
-strength of the team they play for.  And I might be able to add age constraints for players protected or for players selected.  
+There is work that still could be done on this project.  I may need to find a way to correct the player evaluations for the strength of the team they play for.  And I might be able to add age constraints for players protected or for players selected.  
 
 Ex:  Only protect players who are 35 years old or younger, or maybe 25 years old
 or older.   Or only select players between 25 and 30 years old.
