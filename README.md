@@ -4,7 +4,7 @@ Author:         Chris Idso
 Project Name:   NHL Expansion Draft Simulator
 Description:    An attempt to simulate the NHL expansion draft, the process by which
                 a new team selects players from the other teams, using the rules set
-                forth by the NHL.  The idea being to get a feel for how strong the 
+                forth by the NHL. The idea being to get a feel for how strong the 
                 resulting team would be compared to the rest of the league.  And to 
                 learn as much as I could about hockey in the process.
 
@@ -13,7 +13,7 @@ scheduling, and for balance in divisions and conferences. And there is a sort of
 friendly competition between expansion teams to be the first to win a championship.
 
 I am old enough to remember the expansion drafts of the Seahawks and the Mariners in
-the mid 1970's when those teams joined their respective leagues.  And I remember just
+the mid 1970's when those teams joined their respective leagues. And I remember just
 how bad both teams were. The Mariners won one game out of every three in their first
 year, and the Seahawks won two games in their first season. 
 
@@ -28,13 +28,13 @@ before the Seahwks did, in the early 2000's.
 
 For Seattle sports fans, there will be another expansion draft in 2021 when Seattle's 
 team (to be named later) joins the NHL and starts playing. Our sister expansion team
-is already in the league.  They are called the Vegas Golden Knights and they joined 
-the leage NHL in 2017,  They did so well in their expansion draft and in their first 
+is already in the league. They are called the Vegas Golden Knights and they joined 
+the leage NHL in 2017. They did so well in their expansion draft and in their first 
 entry draft that they made a run at the championship (Stanley Cup) in their first year
 but ultimately fell just short.
 
-So, how did they do so well?  I was curious about this, because if they could do 
-so well then perhaps Seattle's team could do just as well.  Fortunately, information 
+So, how did they do so well? I was curious about this, because if they could do 
+so well then perhaps Seattle's team could do just as well. Fortunately, information 
 about this was available on-line, where I could look up the NHL expansion draft rules 
 and find a list of transactions made by the Knights related to their expansion draft
 and the entry draft that followed.
@@ -46,7 +46,7 @@ they were able to make, which allowed them to acquire more draft picks
 (some in the first round).  
 
 Trade Ex:  
-Golden Knights to one of the existing teams:  We see that you left a couple of 
+Golden Knights to one of the existing teams: We see that you left a couple of 
 good players out there (A and B). We know you want to keep player A, so how much
 would you give us to take player B instead of player A?
 
@@ -56,7 +56,7 @@ changes would have.
 
 So with this information in the back of my mind I began designing an expansion draft
 simulator. I was determined to incorporate as many of the expansion draft rules as
-possible.  There would need to be a way to calculate the relative strength of the 
+possible. There would need to be a way to calculate the relative strength of the 
 teams in the NHL, as well as a way to calculate how good a player is (something the 
 NHL has trying to do for some time with varying degrees of success). There would also 
 need to be a way to decide which players to protect, and a method for selecting and 
@@ -64,7 +64,7 @@ grading the expansion team.
 
 Other considerations include players exempt from draft, teams exempt from the 
 draft, players playing too few games to be protected or selected, and players too 
-old (38, 39, 40+ years old).  I did not consider goalies in this project.
+old (38, 39, 40+ years old). I did not consider goalies in this project.
 
 Along the way I tried to put myself in the shoes of a general manager, deciding which
 players to protect, and in the mind of Seattle's general manager, deciding which 
@@ -76,7 +76,7 @@ into a spreadsheet and save it to a csv file.  Then it loads easily into a dataf
 
 I was able to get data for skaters for the years 2011 to 2019. And data on player
 debuts from 2010 to 2019. I also found data on-line for players in 2019-2020 who had a 
-No Movement Clause (NMC) in their contract.  This has been added too (but only for 2019-2020) because NMC's are addressed in the NHL's expansion draft rules.
+No Movement Clause (NMC) in their contract. This has been added too (but only for 2019-2020) because NMC's are addressed in the NHL's expansion draft rules.
 
 Here are the Expansion Draft rules:
 1) Expansion team can take only one player from any given team.  
@@ -98,7 +98,7 @@ And some interesting hockey info:
 3) A team is allowed to suit up 20 players for a game.  They usually go with 
    12 forwards, 6 defensemen, and 2 goalies.
 4) Average shift time for a player is in the neighborhood of 40 seconds, but this
-   varies.  Different for players on the ice during a powerplay or when killing a 
+   varies. Different for players on the ice during a powerplay or when killing a 
    penalty. And different for best players on the team than for other players.
    Also different for defensemen (longer shifts) than for forwards (slightly shorter
    shifts) - due to defensemen not having to skate as hard.
@@ -115,7 +115,7 @@ evaluating players difficult, since it seems unlikely that there is one formula
 that could be applied to all forwards and defensemen, and would involve all three
 of the abovementioned player stats.
 
-This proved to be the biggest challenge in this project.  Other challenges include
+This proved to be the biggest challenge in this project. Other challenges include
 how to handle trades (more than one line in the data for traded player), handling of a changing position list in the data, a strike-shortened season (2012), and a season shortened by coronavirus (2019).     
 
 My finished project consists of a series of functions:
@@ -124,18 +124,18 @@ My finished project consists of a series of functions:
     does some cleanup (trades) and removes players who played <=20 games during 
     the season.  These players are probably callups late in the season and can have
     weird stats. 
-2) calc_base_stats - sums the +/- stats for the players on each team and calculates
-    the mean and std over all the teams.  Does this with the PS stat and the Ztot stat too.  Uses this later to evaluate the results of the draft.
+2) calc_base_stats - Sums the +/- stats for the players on each team and calculates
+    the mean and std over all the teams. Does this with the PS stat and the Ztot stat too.  Uses this later to evaluate the results of the draft.
 3) calc_player_value - evaluates the players using their +/- and PTS stats. Score for
     each player is recorded in the Ztot variable.  Ztot = Z-score(+/-) + Z-score(PTS) 
     for each player.
-4) calc_team_strength - calculates team strength and stores it in a dataframe for
+4) calc_team_strength - Calculates team strength and stores it in a dataframe for
     later reference when drafting a team.
-5) remove_first_second_years - removes first and second year players, since they are
-    exempt from the draft.  Thought they should remain in the data during calculations.
-6) reduce_vars - reduces the variable list to only those variables that are needed from
+5) remove_first_second_years - Removes first and second year players, since they are
+    exempt from the draft. Thought they should remain in the data during calculations.
+6) reduce_vars - Reduces the variable list to only those variables that are needed from
     this point on.  
-7) team_processor - for each team decides which players to protect and then creates a
+7) team_processor - For each team decides which players to protect and then creates a
     dataframe with the unprotected players.
 8) team_selector_by_team_strength - Selects a team by reading from the team_strength
     list which is ordered by team strength. For each team selects best available player from the unprotected players list.    
@@ -150,23 +150,23 @@ My finished project consists of a series of functions:
     
    NOTE: For each of the team-selecting functions the unprotected player list gets
     sorted by Ztot. When the team-selecting functions run they produce a list of
-    the players selected.  At the end of the list (you might need to scroll down a 
+    the players selected. At the end of the list (you might need to scroll down a 
     little) they write out three versions of the team score. One uses the sum of the players' +/- stats, one uses the PS stat, and one uses my own Ztot stat, all of which are evaluated using the team stats calculated by the calc_base_stats function, to determine how many standard deviations away from the 
     mean the score is. 
 
-13) simulate_nhl_exp_draft - one function to control them all. So you only have to 
+13) simulate_nhl_exp_draft - One function to control them all. So you only have to 
      call one function.   
 
 Also included in this project, are some juypter notebooks. One (project_demo) has the 
-functions above in it so you can run them.  Another one (project_walkthrough) has some
-code I wrote as I was working on this project.  It will run too, and will give you an 
+functions above in it so you can run them. Another one (project_walkthrough) has some
+code I wrote as I was working on this project. It will run too, and will give you an 
 idea of what this project does, and of the problems I faced, how I dealt with them, and 
 of my thoughts as I worked on this.
 
-There is work that still could be done on this project.  I may need to find a way to correct the player evaluations for the strength of the team they play for.  And I might be able to add age constraints for players protected or for players selected.  
+There is work that still could be done on this project. I may need to find a way to correct the player evaluations for the strength of the team they play for. And I might be able to add age constraints for players protected or for players selected.  
 
 Ex:  Only protect players who are 35 years old or younger, or maybe 25 years old
-or older.   Or only select players between 25 and 30 years old.
+or older. Or only select players between 25 and 30 years old.
 
 I have run this simulator many times now, and it looks like the results (+/-) are mostly
 in a range between 1.2 and about 1.8. So it looks like our team will be pretty good.
