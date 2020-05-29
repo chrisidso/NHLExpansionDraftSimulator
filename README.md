@@ -8,30 +8,20 @@ Description:    An attempt to simulate the NHL expansion draft, the process by w
                 resulting team would be compared to the rest of the league.  And to 
                 learn as much as I could about hockey in the process.
 
+
+Introduction:
+
 Expansion in sports leagues usually (but not always) happens in pairs, for ease of 
 scheduling, and for balance in divisions and conferences. And there is a sort of 
 friendly competition between expansion teams to be the first to win a championship.
 
-I am old enough to remember the expansion drafts of the Seahawks and the Mariners in
-the mid 1970's when those teams joined their respective leagues. And I remember just
-how bad both teams were. The Mariners won one game out of every three in their first
-year, and the Seahawks won two games in their first season. 
+Seattle sports fans haven't seen an expansion draft since the 1970's when the
+Seahawks and Mariners joined their respective leagues. We will get another chance in 2021 when Seattle's team (to be named later) joins the NHL and starts playing. 
 
-The Mariners remained a bad team for years, and could only watch as their sister
-expansion team, the Toronto Blue Jays, improved and eventually won two world series 
-in the early 1990's. The Mariners still have not been to the World Series.
+Our sister expansion team is already in the league. They are called the Vegas Golden Knights and they joined the leage NHL in 2017. They did so well in their expansion draft and in their first entry draft that they made a run at the championship (Stanley Cup) in their first year but ultimately fell just short.
 
-The Seahawks fared somewhat better, winning nine games in their third year, and
-finally winning the superbowl in 2014.  Their sister expansion team, the Tampa Bay
-Buccaneers, didn't win a game until late in their second year, but won a superbowl
-before the Seahwks did, in the early 2000's.
 
-For Seattle sports fans, there will be another expansion draft in 2021 when Seattle's 
-team (to be named later) joins the NHL and starts playing. Our sister expansion team
-is already in the league. They are called the Vegas Golden Knights and they joined 
-the leage NHL in 2017. They did so well in their expansion draft and in their first 
-entry draft that they made a run at the championship (Stanley Cup) in their first year
-but ultimately fell just short.
+The Expansion Draft:
 
 So, how did they do so well? I was curious about this, because if they could do 
 so well then perhaps Seattle's team could do just as well. Fortunately, information 
@@ -70,45 +60,47 @@ Along the way I tried to put myself in the shoes of a general manager, deciding 
 players to protect, and in the mind of Seattle's general manager, deciding which 
 players to take.  
 
+    Expansion Draft rules:
+    1) Expansion team can take only one player from any given team.  
+    2) Expansion team must take 14 forwards and 9 defensemen and 3 goalies.
+    3) A team can protect a) any 8 skaters or b) 7 forwards and 3 defensemen.
+    4) A team has to leave 2 forwards and 1 defensemen unprotected who played
+        at least 40 games in the current season or 70 games in the last two seasons. 
+    5) Players with NMC's must be protected and count against the abovementioned 
+        limits.  Players with NMC's can waive that clause.
+    6) Players in their first or second year are exempt from the expansion draft. 
+    7) When Seattle drafts in 2021 the Vegas Golden Knights will be exempt.   
+
+
+The Data:
+
 The data for this project was available on line at NHL Reference.  You just find the 
 data you want (in the form of a big table) and convert it to text, and then copy it
 into a spreadsheet and save it to a csv file.  Then it loads easily into a dataframe.
 
-I was able to get data for skaters for the years 2011 to 2019. And data on player
+I was able to get data for skaters for the years 2011 to 2019, and data on player
 debuts from 2010 to 2019. I also found data on-line for players in 2019-2020 who had a 
-No Movement Clause (NMC) in their contract. This has been added too (but only for 2019-2020) because NMC's are addressed in the NHL's expansion draft rules.
+No Movement Clause (NMC) in their contract. The expansion draft rules address NMC's so this has been added too (but only for 2019-2020).
 
-Here are the Expansion Draft rules:
-1) Expansion team can take only one player from any given team.  
-2) Expansion team must take 14 forwards and 9 defensemen and 3 goalies.
-3) A team can protect a) any 8 skaters or b) 7 forwards and 3 defensemen.
-4) A team has to leave 2 forwards and 1 defensemen unprotected who played
-   at least 40 games in the current season or 70 games in the last two seasons. 
-5) Players with NMC's must be protected and count against the abovementioned 
-   limits.  Players with NMC's can waive that clause.
-6) Players in their first or second year are exempt from the expansion draft. 
-7) When Seattle drafts in 2021 the Vegas Golden Knights will be exempt.   
-
-And some interesting hockey info:
-1) Useful player stats include TOI (time on ice in minutes), +/- (goal differential)
-   and PTS (Points - goals + assists)
-2) The stats in (1) above do not make sense at first.  Ex: A player can record many 
-   points, and play lots of minutes, and all or most of the 82 games in a season,
-   but still have a negative +/-.
-3) A team is allowed to suit up 20 players for a game.  They usually go with 
-   12 forwards, 6 defensemen, and 2 goalies.
-4) Average shift time for a player is in the neighborhood of 40 seconds, but this
-   varies. Different for players on the ice during a powerplay or when killing a 
-   penalty. And different for best players on the team than for other players.
-   Also different for defensemen (longer shifts) than for forwards (slightly shorter
-   shifts) - due to defensemen not having to skate as hard.
-5) Hockey teams can expand their rosters late in the season, just as baseball teams
-   can.   
-6) Some players are on the ice when the team is shorthanded, team is on powerplay, and
-   when teams are at even strength.  
-7) Some players are on the ice when the team is on powerplay, when teams are at even
-   strength, and not when the team is shorthanded.
-8) Some players are on the ice only when teams are at even strength. 
+Some interesting hockey info:
+    1) Useful player stats include TOI (time on ice in minutes), +/- (goal differential)
+        and PTS (goals + assists)
+    2) The stats in (1) above do not make sense at first.  Ex: A player can record many 
+        points, and play lots of minutes, and all or most of the 82 games in a season,
+        but still have a negative +/-.
+    3) A team is allowed to suit up 20 players for a game.  They usually go with 
+        12 forwards, 6 defensemen, and 2 goalies.
+    4) Average shift time for a player is in the neighborhood of 40 seconds, but this
+        varies. Different for players on the ice during a powerplay or when killing a 
+        penalty. And different for best players on the team than for other players.
+        Also different for defensemen (longer shifts) than for forwards (slightly shorter shifts) - due to defensemen not having to skate as hard.
+    5) Hockey teams can expand their rosters late in the season, just as baseball teams
+        can.   
+    6) Some players are on the ice when the team is shorthanded, team is on a
+        powerplay, and when teams are at even strength.  
+    7) Some players are on the ice when the team is on powerplay, when teams are at even
+        strength, and not when the team is shorthanded.
+    8) Some players are on the ice only when teams are at even strength. 
 
 As you might expect the last four items in the list above make the problem of
 evaluating players difficult, since it seems unlikely that there is one formula
@@ -117,6 +109,7 @@ of the abovementioned player stats.
 
 This proved to be the biggest challenge in this project. Other challenges include
 how to handle trades (more than one line in the data for traded player), handling of a changing position list in the data, a strike-shortened season (2012), and a season shortened by coronavirus (2019).     
+
 
 My finished project consists of a series of functions:
 
@@ -168,11 +161,16 @@ There is work that still could be done on this project. I may need to find a way
 Ex:  Only protect players who are 35 years old or younger, or maybe 25 years old
 or older. Or only select players between 25 and 30 years old.
 
+
+Conclusion:
+
 I have run this simulator many times now, and it looks like the results (+/-) are mostly
 in a range between 1.2 and about 1.8. So it looks like our team will be pretty good.
 I expect the other teams in the league will be more prepared for this expansion draft
 than they were for the last one (in 2017) so we probably will not do quite as well
 as the Knights did.
+
+
 
 When Seattle's team joins the league we will be in the same division (Pacific) as the
 Knights, so there should be some really good games between Seattle and Vegas!!! 
