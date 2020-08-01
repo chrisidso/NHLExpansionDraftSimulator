@@ -1,4 +1,4 @@
-4/21/2020   
+4/21/2020
 
 Author:         Chris Idso
 Project Name:   NHL Expansion Draft Simulator
@@ -16,7 +16,7 @@ scheduling, and for balance in divisions and conferences. And there is a sort of
 friendly competition between expansion teams to be the first to win a championship.
 
 Seattle sports fans haven't seen an expansion draft since the 1970's when the
-Seahawks and Mariners joined their respective leagues. We will get another chance in 2021 when Seattle's team (to be named later) joins the NHL and starts playing. 
+Seahawks and Mariners joined their respective leagues. We will get another chance in 2021 when the Seattle Kraken joins the NHL and starts playing. 
 
 Our sister expansion team is already in the league. They are called the Vegas Golden Knights and they joined the leage NHL in 2017. They did so well in their expansion draft and in their first entry draft that they made a run at the championship (Stanley Cup) in their first year but ultimately fell just short.
 
@@ -24,7 +24,7 @@ Our sister expansion team is already in the league. They are called the Vegas Go
 The Expansion Draft:
 
 So, how did they do so well? I was curious about this, because if they could do 
-so well then perhaps Seattle's team could do just as well. Fortunately, information 
+so well then perhaps the Kraken could do just as well. Fortunately, information 
 about this was available on-line, where I could look up the NHL expansion draft rules 
 and find a list of transactions made by the Knights related to their expansion draft
 and the entry draft that followed.
@@ -35,7 +35,7 @@ like, which leaves quite a few good players on the table. The other was the trad
 they were able to make, which allowed them to acquire more draft picks 
 (some in the first round).  
 
-Trade Ex:  
+Trade Example:  
 Golden Knights to one of the existing teams: We see that you left a couple of 
 good players out there (A and B). We know you want to keep player A, so how much
 would you give us to take player B instead of player A?
@@ -46,7 +46,7 @@ changes would have.
 
 So with this information in the back of my mind I began designing an expansion draft
 simulator. I was determined to incorporate as many of the expansion draft rules as
-possible. There would need to be a way to calculate the relative strength of the 
+possible. And there would need to be a way to calculate the relative strength of the 
 teams in the NHL, as well as a way to calculate how good a player is (something the 
 NHL has trying to do for some time with varying degrees of success). There would also 
 need to be a way to decide which players to protect, and a method for selecting and 
@@ -96,10 +96,10 @@ Some interesting hockey info:
         Also different for defensemen (longer shifts) than for forwards (slightly shorter shifts) - due to defensemen not having to skate as hard.
     5) Hockey teams can expand their rosters late in the season, just as baseball teams
         can.   
-    6) Some players are on the ice when the team is shorthanded, team is on a
-        powerplay, and when teams are at even strength.  
-    7) Some players are on the ice when the team is on powerplay, when teams are at even
-        strength, and not when the team is shorthanded.
+    6) Some players are on the ice when the team is shorthanded, the team is on a
+        powerplay, and when the teams are at even strength.  
+    7) Some players are on the ice when the team is on powerplay, when the teams are
+        at even strength, and not when the team is shorthanded.
     8) Some players are on the ice only when teams are at even strength. 
 
 As you might expect the last four items in the list above make the problem of
@@ -165,14 +165,11 @@ or older. Or only select players between 25 and 30 years old.
 Conclusion:
 
 I have run this simulator many times now, and it looks like the results (+/-) are mostly
-in a range between 1.2 and about 1.8. So it looks like our team will be pretty good.
+in a range between 1.2 and about 1.8. So it looks like the Kraken will be pretty good.
 I expect the other teams in the league will be more prepared for this expansion draft
-than they were for the last one (in 2017) so we probably will not do quite as well
-as the Knights did.
+than they were for the last one (in 2017) so the Kraken probably will not do quite as well as the Knights did.
 
-
-
-When Seattle's team joins the league we will be in the same division (Pacific) as the
+When the Kraken joins the league we will be in the same division (Pacific) as the
 Knights, so there should be some really good games between Seattle and Vegas!!! 
 
 If you have any questions for me, or ideas on how this project might be improved, you
